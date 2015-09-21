@@ -7,6 +7,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -58,7 +62,22 @@ public class MainActivity extends AppCompatActivity {
         String inputLine;
 
         while ((inputLine = in.readLine()) != null)
-            System.out.println(inputLine);
+            try { 
+                String t = inputLine;
+                JSONArray jsonArray = new JSONArray(t);
+                Log.i("HOSSI", "HAHA "+ t);
+//                JSONObject jsnobject = new JSONObject(inputLine);
+
+//                JSONArray jsonArray = jsnobject.getJSONArray("");
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject explrObject = jsonArray.getJSONObject(i);
+                    Log.i("HOSSIIII", ""+explrObject.get("title"));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+//            {"idIMDB":"tt0111161","ranking":1,"rating":"9.2","title":"The Shawshank Redemption","urlPoster":"http://ia.media-imdb.com/images/M/MV5BODU4MjU4NjIwNl5BMl5BanBnXkFtZTgwMDU2MjEyMDE@._V1_UX34_CR0,0,34,50_AL_.jpg","year":"1994"}
             Log.i("HOSSIIII","TEST "+inputLine);
         in.close();
 
