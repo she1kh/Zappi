@@ -1,9 +1,7 @@
 package se.she1kh.zappi;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.media.Image;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,8 +10,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -24,8 +20,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,20 +31,9 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ImageButton imgbtn;
     private static String APITOKEN = "594fc16e-c3a4-41e4-9f84-402a5902bda4";
 
     private ArrayList<Movie_Item> movieItems = new ArrayList<>();
-
-
-    static final String[] numbers = new String[] {
-            "A", "B", "C", "D", "E",
-            "F", "G", "H", "I", "J",
-            "K", "L", "M", "N", "O",
-            "P", "Q", "R", "S", "T",
-            "U", "V", "W", "X", "Y", "Z"};
-    static final String[] MOBILE_OS = new String[] {
-            "Android", "iOS","Windows", "Blackberry" };
 
 
     @Override
@@ -59,36 +42,19 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
         new RequestTask().execute("http://stackoverflow.com");
-
-
-
-
-//        GridView gridView = (GridView) findViewById(R.id.gridView);
-//
-//        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-//                android.R.layout.simple_list_item_1, numbers);
-//
-//        gridView.setAdapter(adapter);
-//
-//        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            public void onItemClick(AdapterView<?> parent, View v,
-//                                    int position, long id) {
-//                Toast.makeText(getApplicationContext(),
-//                        ((TextView) v).getText(), Toast.LENGTH_SHORT).show();
-//            }
-//        });
-
 
     }
     class RequestTask extends AsyncTask<String, String, String> {
-
 
         @Override
         protected String doInBackground(String... uri) {
 
             try {
-               getJson();
+
+               getJson("http://api.myapifilms.com/imdb/top?start=1&end=250&token=");
 
             } catch (IOException e) {
                 //TODO Handle problems..
@@ -115,21 +81,15 @@ public class MainActivity extends AppCompatActivity {
                             ((TextView) v.findViewById(R.id.grid_item_label))
                                     .getText(), Toast.LENGTH_SHORT).show();
 
-                    Fragment somefrag = new Info_Fragment();
-                    FragmentManager fm = getFragmentManager();
-                    fm.beginTransaction()
-                            .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
-                            .show(somefrag)
-                            .commit();
-
                 }
             });
+
         }
     }
-    public void getJson() throws IOException {
+    public void getJson(String url_path) throws IOException {
         URL yahoo = null;
         try {
-            yahoo = new URL("http://api.myapifilms.com/imdb/top?token=" + APITOKEN);
+            yahoo = new URL(url_path + APITOKEN);
 
         URLConnection yc = yahoo.openConnection();
         BufferedReader in = new BufferedReader(
@@ -155,7 +115,8 @@ public class MainActivity extends AppCompatActivity {
                     String rating = explrObject.get("rating").toString();
                     String ranking = explrObject.get("ranking").toString();
 
-                    movieItems.add(new Movie_Item(title,year,urlPoster,idIMDB,rating,ranking));
+                    Bitmap bitmapPoster = getBitmapFromURL(urlPoster);
+                    movieItems.add(new Movie_Item(title,year,bitmapPoster,idIMDB,rating,ranking));
 
                 }
 
@@ -172,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("HOSSIIII", "TES11111 " + test.getTitle());
                 Log.i("HOSSIIII", "TEST222222 " + test.getYear());
                 Log.i("HOSSIIII", "TEST33333 " + test.getIdIMDB());
-                Log.i("HOSSIIII", "TEST444444 " + test.getUrlPoster());
+                Log.i("HOSSIIII", "TEST444444 " + test.getBitmapPoster());
                 Log.i("HOSSIIII", "TEST55555 " + test.getRating());
                 Log.i("HOSSIIII", "TEST666666 " + test.getRanking());
                 Log.i("HOSSIIII", "TEST666666 " + movieItems.size());
@@ -181,8 +142,30 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-
     }
+
+    public Bitmap getBitmapFromURL(String src) {
+        try {
+            Log.e("src", src);
+            URL url = new URL(src);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap myBitmap = BitmapFactory.decodeStream(input);
+            Log.e("Bitmap", "returned");
+
+            return myBitmap;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("Exception", e.getMessage());
+            return null;
+
+        }
+    }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
